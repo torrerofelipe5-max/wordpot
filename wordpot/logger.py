@@ -8,7 +8,7 @@ LOGGER = logging.getLogger('wordpot-logger')
 
 def logging_setup():
     # Formatter
-    formatter = logging.Formatter('%(asctime)s - %(message)s')
+    formatter = logging.Formatter('')
 
     # File handler
     logfile = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../logs/wordpot.log')

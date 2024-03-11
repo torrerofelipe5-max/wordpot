@@ -91,13 +91,32 @@ class BasePlugin(object):
         return
 
     def to_json_log(self, **kwargs):
+        from datetime import datetime
         import json
-        return json.dumps(dict(kwargs, 
-            source_ip=self.inputs['request'].remote_addr, 
-            source_port=self.inputs['request'].environ['REMOTE_PORT'],
-            dest_ip=self.inputs['request'].environ['SERVER_NAME'],
-            dest_port=self.inputs['request'].environ['SERVER_PORT'],
-            user_agent=self.inputs['request'].user_agent.string,
-            url=self.inputs['request'].url
-        ))
+        from user_agents import parse
 
+        # Parse the User-Agent string
+        user_agent_string = self.inputs['request'].user_agent.string
+        user_agent = parse(user_agent_string)
+
+        # Get current time in ISO 8601 format
+        timestamp = datetime.now().isoformat()
+
+        # Flatten user agent details into top-level fields
+        log_data = {
+            "timestamp": timestamp,
+            "src_ip": self.inputs['request'].remote_addr,
+            "src_port": self.inputs['request'].environ['REMOTE_PORT'],
+            "dest_ip": self.inputs['request'].environ['SERVER_NAME'],
+            "dest_port": self.inputs['request'].environ['SERVER_PORT'],
+            "browser_family": user_agent.browser.family,
+            "browser_version": user_agent.browser.version_string,
+            "os_family": user_agent.os.family,
+            "os_version": user_agent.os.version_string,
+            "device_family": user_agent.device.family,
+            "user_agent": user_agent_string,
+            "url": self.inputs['request'].url,
+            **kwargs
+        }
+
+        return json.dumps(log_data)
